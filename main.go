@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"math/rand"
 	"sync"
 	"time"
@@ -24,7 +23,7 @@ func generateRandomElements(size int) []int {
 	}
 	randomSlice := make([]int, size)
 	for i := 0; i < size; i++ {
-		randomSlice = append(randomSlice, rand.Int())
+		randomSlice[i] = rand.Int()
 	}
 	return randomSlice
 
@@ -39,7 +38,7 @@ func maximum(data []int) int {
 		return data[0]
 
 	}
-	maxValue := math.MinInt
+	maxValue := data[0]
 	for _, v := range data {
 		if v > maxValue {
 			maxValue = v
@@ -59,7 +58,6 @@ func maxChunks(data []int) int {
 	}
 
 	var wg sync.WaitGroup
-	var mu sync.Mutex
 
 	maxSlice := make([]int, CHUNKS)
 
@@ -70,18 +68,11 @@ func maxChunks(data []int) int {
 		part := data[iStart:iFinish]
 		wg.Add(1)
 
-		go func(localPart []int) {
+		go func(localPart []int, i int) {
 			defer wg.Done()
-			maxValue := math.MinInt
-			for _, v := range localPart {
-				if v > maxValue {
-					maxValue = v
-				}
-			}
-			mu.Lock()
-			maxSlice = append(maxSlice, maxValue)
-			mu.Unlock()
-		}(part)
+			maxInPart := maximum(part)
+			maxSlice[i] = maxInPart
+		}(part, i)
 	}
 	wg.Wait()
 	maxValue := maximum(maxSlice)
